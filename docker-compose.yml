@@ -1,0 +1,57 @@
+version: "3.9"
+
+networks:
+  database:
+    driver: bridge
+  api:
+    driver: bridge
+
+services:
+  histomapservice:
+    hostname: histomapservice
+    build: backend/HistoMapService
+    depends_on:
+      - sqlserver
+    ############################
+    #### Bridge network fix ####
+    # 
+    # If bridge network fails enable 'network_mode' 
+    # and comment out 'ports' and 'networks'.
+    # Also remove server entry in SqlServer ConnectionString in:
+    # backend/HistoMapService/appsettings.json
+    #
+    # This is development ONLY fix,
+    # for production 'network_mode' should be commented out,
+    # 'ports' and 'networks' should be enabled
+    # and SqlServer Connection string should contain at the beginning:
+    # Server=sqlserver;
+    #
+    ##### DEV ONLY FIX #####
+    #network_mode: host
+    ##### PRODUCTION!! #####
+    ports:
+      - "4200:4200"
+    expose:
+      - 4200
+    networks:
+     - database
+     - api
+    ############################
+
+  sqlserver:
+    hostname: sqlserver
+    build: backend/SqlServer
+    expose:
+      - 1433
+    networks:
+     - database
+
+  webpage:
+    hostname: webpage
+    build: frontend
+    depends_on:
+      - histomapservice
+    ports:
+      - "80:80"
+    networks:
+     - api
