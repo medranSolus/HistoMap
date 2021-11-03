@@ -96,7 +96,7 @@ export const quatMultiply = function (q1, q2) {
 
 // This functi0n computes quaternion to euler angles
 // https://en.wikipedia.org/wiki/Rotation_formalisms_in_three_dimensions#Euler_angles_.E2.86.94_Quaternion
-export const quat2euler = function (t) {
+export const quat2euler = function (t): [number, number, number] {
 	if (!t) return;
 
 	return [
@@ -114,7 +114,7 @@ export const quat2euler = function (t) {
 	o0 - the projection rotation in euler angles at starting pos (v0), commonly obtained by projection.rotate
 */
 
-export const eulerAngles = function (v0, v1, o0) {
+export const eulerAngles = function (v0, v1, o0): [number, number, number] {
 	/*
 		The math behind this:
 		- first calculate the quaternion rotation between the two vectors, v0 & v1

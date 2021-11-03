@@ -1,6 +1,7 @@
 import React from 'react';
 import * as topojson from 'topojson-client';
 import * as d3 from 'd3';
+import { default as world } from './world-110m.json';
 import { eulerAngles } from '../utils/mathGeo.utils';
 import useD3 from '../common/useD3';
 export interface WorldMap2Props {}
@@ -16,62 +17,57 @@ const WorldMap2: React.FC<WorldMap2Props> = ({}) => {
 		.translate([width / 2, height / 2])
 		.clipAngle(90);
 
-	let path = d3.geoPath().projection(projection);
+	const ref = useD3(
+		(container) => {
+			container.selectAll('svg').remove();
+			let path = d3.geoPath().projection(projection);
 
-	const ref = useD3((svg) => {
-		svg.append('svg').attr('width', width).attr('height', height);
+			let svg = container.append('svg').attr('width', width).attr('height', height);
 
-		//@ts-ignore
-		let drag = d3.behavior.drag().on('dragstart', dragstarted).on('drag', dragged).on('dragend', dragended);
+			let drag = d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
 
-		svg.call(drag);
+			svg.call(drag);
 
-		let gpos0, o0;
+			let gpos0, o0;
 
-		function dragstarted() {
-			//@ts-ignore
-			gpos0 = projection.invert(d3.mouse(this));
-			o0 = projection.rotate();
+			function dragstarted(e) {
+				if (projection) {
+					gpos0 = projection.invert(d3.pointer(e));
+					o0 = projection.rotate();
 
-			svg.insert('path').datum({ type: 'Point', coordinates: gpos0 }).attr('d', path).attr('class', 'point');
-		}
+					// dodanie kropki
+					// svg.insert('path')
+					// 	.datum({ type: 'Point', coordinates: gpos0 })
+					// 	.attr('d', path)
+					// 	.attr('class', 'point');
+				}
+			}
 
-		function dragged() {
-			//@ts-ignore
-			let gpos1 = projection.invert(d3.mouse(this));
+			function dragged(e) {
+				let gpos1 = projection.invert(d3.pointer(e));
 
-			o0 = projection.rotate();
+				o0 = projection.rotate();
 
-			let o1 = eulerAngles(gpos0, gpos1, o0);
-			//@ts-ignore
-			projection.rotate(o1);
+				let o1 = eulerAngles(gpos0, gpos1, o0);
 
-			svg.selectAll('.point').datum({ type: 'Point', coordinates: gpos1 });
-			//@ts-ignore
-			svg.selectAll('path').attr('d', path);
-		}
+				projection.rotate(o1);
 
-		function dragended() {
-			svg.selectAll('.point').remove();
-		}
+				svg.selectAll('.point').datum({ type: 'Point', coordinates: gpos1 });
+				svg.selectAll('path').attr('d', path);
+			}
 
-		d3.json<any>('world-110m.json')
-			.then((world) => {
-				svg.append('path')
-					.datum(topojson.feature(world, world.objects.land))
-					.attr('class', 'land')
-					.attr('d', path);
+			function dragended() {
+				svg.selectAll('.point').remove();
+			}
 
-				let borders = topojson.mesh(world, world.objects.countries, function (a, b) {
-					return a !== b;
-				});
-
-				svg.append('path').datum(borders).attr('class', 'border').attr('d', path);
-			})
-			.catch((err) => {
-				throw err;
+			svg.append('path').datum(topojson.feature(world, world.objects.land)).attr('class', 'land').attr('d', path);
+			let borders = topojson.mesh(world, world.objects.countries, function (a, b) {
+				return a !== b;
 			});
-	}, []);
+			svg.append('path').datum(borders).attr('class', 'border').attr('d', path);
+		},
+		[world]
+	);
 	return (
 		<>
 			<div ref={ref}></div>
