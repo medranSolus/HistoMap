@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 const CenteredDiv = styled.div`
 	margin: auto;
-	max-width: 1200px;
+	max-width: 1600px;
 	text-align: center;
 `;
 
