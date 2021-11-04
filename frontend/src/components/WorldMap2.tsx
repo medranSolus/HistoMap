@@ -12,7 +12,7 @@ const WorldMap2: React.FC<WorldMap2Props> = ({}) => {
 	let r = 250;
 
 	let projection = d3
-		.geoOrthographic()
+		.geoMercator()
 		.scale(250)
 		.translate([width / 2, height / 2])
 		.clipAngle(90);
@@ -24,9 +24,9 @@ const WorldMap2: React.FC<WorldMap2Props> = ({}) => {
 
 			let svg = container.append('svg').attr('width', width).attr('height', height);
 
-			let drag = d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
+			let dragHandler = d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
 
-			svg.call(drag);
+			svg.call(dragHandler);
 
 			let gpos0, o0;
 

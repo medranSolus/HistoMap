@@ -1,26 +1,49 @@
-.stroke {
-	fill: none;
-	stroke: #000;
-	stroke-width: 1px;
-}
-
-.fill {
-	fill: #f2f2f2;
+.land {
+	fill: #999;
+	stroke-opacity: 1;
 }
 
 .graticule {
 	fill: none;
-	stroke: #777;
-	stroke-width: 0.5px;
-	stroke-opacity: 0.5;
+	stroke: black;
+	stroke-width: 0.5;
+	opacity: 0.2;
 }
 
-.land {
-	fill: darkgrey;
+.labels {
+	font: 8px sans-serif;
+	fill: black;
+	opacity: 0.5;
+
+	display: none;
 }
 
-.boundary {
+.noclicks {
+	pointer-events: none;
+}
+
+.point {
+	opacity: 0.6;
+}
+
+.arcs {
+	opacity: 0.1;
+	stroke: gray;
+	stroke-width: 3;
+}
+.flyers {
+	stroke-width: 1;
+	opacity: 0.6;
+	stroke: darkred;
+}
+.arc,
+.flyer {
+	stroke-linejoin: round;
 	fill: none;
-	stroke: #fff;
-	stroke-width: 0.5px;
+}
+.arc {
+}
+.flyer {
+}
+.flyer:hover {
 }
