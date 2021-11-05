@@ -10,7 +10,9 @@ import {
 	addGlobeShading,
 	layerJsonOnGlobe,
 	scaleGlobShadow,
-	scaleGlobeBaseColorCircle
+	scaleGlobeBaseColorCircle,
+	scaleGlobeHighlight,
+	scaleGlobeShading
 } from '../utils/globeStyles';
 
 const sensitivity = 58;
@@ -28,12 +30,6 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 		.scale(220);
 
 	const initialScale = projection.scale();
-
-	var sky = d3
-		.geoOrthographic()
-		.translate([width / 2, height / 2])
-		.clipAngle(90)
-		.scale(300);
 
 	// var path = d3.geoPath().projection(projection).pointRadius(2);
 	var geoPath = d3.geoPath().projection(projection);
@@ -75,6 +71,8 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 				appendedPath.attr('d', geoPath(land));
 				scaleGlobShadow(svg, projection, [width, height]);
 				scaleGlobeBaseColorCircle(svg, projection, [width, height]);
+				scaleGlobeHighlight(svg, projection, [width, height]);
+				scaleGlobeShading(svg, projection, [width, height]);
 			};
 			render();
 			svg.call(

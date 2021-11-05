@@ -62,8 +62,6 @@ export const scaleGlobeBaseColorCircle = function (
 	projection: d3.GeoProjection,
 	[width, height]: [number, number]
 ) {
-	const SCALE = projection.scale();
-
 	svg.select('circle#ocean_fill_circle').attr('r', projection.scale());
 };
 
@@ -82,6 +80,7 @@ export const addGlobeHighlight = function (svg, projection, [width, height]: [nu
 		.attr('cy', height / 2)
 		.attr('r', projection.scale())
 		.attr('class', 'noclicks')
+		.attr('id', 'globe_highlight_circle')
 		.style('fill', 'url(#globe_highlight)');
 };
 
@@ -90,9 +89,7 @@ export const scaleGlobeHighlight = function (
 	projection: d3.GeoProjection,
 	[width, height]: [number, number]
 ) {
-	const SCALE = projection.scale();
-
-	svg.select('circle#ocean_fill_circle').attr('r', projection.scale());
+	svg.select('circle#globe_highlight_circle').attr('r', projection.scale());
 };
 
 export const addGlobeShading = function (svg, projection, [width, height]: [number, number]) {
@@ -109,8 +106,13 @@ export const addGlobeShading = function (svg, projection, [width, height]: [numb
 		.attr('cx', width / 2)
 		.attr('cy', height / 2)
 		.attr('r', projection.scale())
+		.attr('id', 'globe_shading_circle')
 		.attr('class', 'noclicks')
 		.style('fill', 'url(#globe_shading)');
+};
+
+export const scaleGlobeShading = function (svg, projection, [width, height]: [number, number]) {
+	svg.select('circle#globe_shading_circle').attr('r', projection.scale());
 };
 
 export const layerJsonOnGlobe = function (svg, path, world) {
