@@ -1,9 +1,9 @@
 import React from 'react';
 import * as topojson from 'topojson-client';
 import * as d3 from 'd3';
-import { default as world } from './world-110m.json';
-import { eulerAngles } from '../utils/mathGeo.utils';
-import useD3 from '../common/useD3';
+import { default as world } from '../world-110m.json';
+import { eulerAngles } from '../../utils/mathGeo.utils';
+import useD3 from '../../common/useD3';
 export interface WorldMap2Props {}
 
 const WorldMap2: React.FC<WorldMap2Props> = ({}) => {

@@ -3,9 +3,17 @@
 }
 
 .App-header {
-	text-align: center;
+	text-align: left;
 	font-size: calc(10px + 2vmin);
 	color: #282c34;
 	font-family: Crete Round;
-	margin: 1.5rem auto 1rem;
+	margin: 1.5rem auto 1rem 25px;
+}
+
+.year-slider-container {
+	margin: -50px auto 1rem;
+	max-width: 600px;
+}
+
+.year-slider {
 }

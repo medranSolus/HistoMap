@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import * as d3 from 'd3';
-import useD3 from '../common/useD3';
-import '../styles/WorldMap.scss';
+import useD3 from '../../common/useD3';
+import '../../styles/WorldMap.scss';
 import { setInterval } from 'timers';
 
 export interface WorldMapProps {}
