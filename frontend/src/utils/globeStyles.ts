@@ -84,6 +84,10 @@ export const addGlobeHighlight = function (svg, projection, [width, height]: [nu
 		.style('fill', 'url(#globe_highlight)');
 };
 
+export const removeGlobeHighlight = function (svg) {
+	svg.select('#globe_highlight_circle').remove();
+};
+
 export const scaleGlobeHighlight = function (
 	svg: d3.Selection<SVGSVGElement, any, any, any>,
 	projection: d3.GeoProjection,
@@ -115,10 +119,18 @@ export const scaleGlobeShading = function (svg, projection, [width, height]: [nu
 	svg.select('circle#globe_shading_circle').attr('r', projection.scale());
 };
 
+export const removeGlobeShading = function (svg) {
+	svg.select('#globe_shading_circle').remove();
+};
+
 export const layerJsonOnGlobe = function (svg, path, world) {
 	return svg
 		.append('path')
 		.datum(topojson.feature(world, world.objects.land))
 		.attr('class', 'land noclicks')
 		.attr('d', path);
+};
+
+export const removeExistingJsonOnGlobe = function (svg: d3.Selection<SVGSVGElement, any, any, any>) {
+	svg.select('path').remove();
 };
