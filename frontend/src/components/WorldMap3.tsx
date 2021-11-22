@@ -16,17 +16,32 @@ import {
 	scaleGlobeShading,
 	removeExistingJsonOnGlobe,
 	removeGlobeHighlight,
-	removeGlobeShading
+	removeGlobeShading,
+	addWorldMapConnections,
+	applyWorldMapConnections,
+	removeWorldMapConnections
 } from '../utils/globeStyles';
+import '../styles/WorldMap.scss';
 
-const sensitivity = 58;
+const SENSITIVITY_LOW_RES = 58;
+const SENSITIVITY_HIGH_RES = 58;
 
-const SCALE_POINT = 800;
+const SCALE_POINT = 900;
 
 export interface WorldMap3Props {
 	width: number;
 	height: number;
 }
+
+var links = [
+	{
+		type: 'LineString',
+		coordinates: [
+			[15.72899, 50.899],
+			[15.50643, 51.93548]
+		]
+	}
+];
 
 const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 	var projection = d3
@@ -41,7 +56,13 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 	var path = geoPath.pointRadius(2);
 
 	var scale = 0;
+	var scaleIsLow = true;
 	var shouldChangeMap = false;
+
+	// worldLow.features.filter(function (d) {
+	// 	console.log(d.properties.name);
+	// 	return d.properties.name == 'France';
+	// });
 
 	const ref = useD3(
 		(container) => {
@@ -68,16 +89,14 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 			// shader globu
 			addGlobeShading(svg, projection, [width, height]);
 
-			// links.forEach(function (e, i, a) {
-			// 	var feature = { type: 'Feature', geometry: { type: 'LineString', coordinates: [e.source, e.target] } };
-			// 	arcLines.push(feature);
-			// });
-
 			let land = topojson.feature(world, world.objects.land);
+
+			addWorldMapConnections(svg, path, links);
 
 			const render = () => {
 				if (shouldChangeMap) {
 					world = scale <= SCALE_POINT ? worldLow : worldHigh;
+					removeWorldMapConnections(svg);
 					removeExistingJsonOnGlobe(svg);
 					removeGlobeHighlight(svg);
 					removeGlobeShading(svg);
@@ -86,6 +105,7 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 
 					addGlobeHighlight(svg, projection, [width, height]);
 					addGlobeShading(svg, projection, [width, height]);
+					addWorldMapConnections(svg, path, links);
 
 					land = topojson.feature(world, world.objects.land);
 
@@ -98,13 +118,15 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 				scaleGlobeBaseColorCircle(svg, projection, [width, height]);
 				scaleGlobeHighlight(svg, projection, [width, height]);
 				scaleGlobeShading(svg, projection, [width, height]);
-				console.log('Scale', scale);
+
+				applyWorldMapConnections(svg, path);
 			};
 			render();
 			svg.call(
 				d3.drag().on('drag', (event) => {
 					const rotate = projection.rotate();
-					const k = sensitivity / projection.scale();
+					// const SENSITIVITY = scaleIsLow ?
+					const k = SENSITIVITY_LOW_RES / projection.scale();
 					projection.rotate([rotate[0] + event.dx * k, rotate[1] - event.dy * k]);
 					render();
 				})

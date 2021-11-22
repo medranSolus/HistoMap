@@ -132,5 +132,28 @@ export const layerJsonOnGlobe = function (svg, path, world) {
 };
 
 export const removeExistingJsonOnGlobe = function (svg: d3.Selection<SVGSVGElement, any, any, any>) {
-	svg.select('path').remove();
+	svg.select('path.land').remove();
+};
+
+export const addWorldMapConnections = function (svg, path, data) {
+	return (
+		svg
+			.append('g')
+			.attr('class', 'arcs')
+			.selectAll('path')
+			.data(data)
+			.enter()
+			.append('path')
+			.attr('class', 'arc')
+			// @ts-ignore
+			.attr('d', path)
+	);
+};
+
+export const applyWorldMapConnections = function (svg, path) {
+	svg.selectAll('.arcs > path.arc').attr('d', path);
+};
+
+export const removeWorldMapConnections = function (svg) {
+	svg.selectAll('.arcs > path.arc');
 };

@@ -26,24 +26,10 @@
 	opacity: 0.6;
 }
 
-.arcs {
-	opacity: 0.1;
-	stroke: gray;
-	stroke-width: 3;
-}
-.flyers {
-	stroke-width: 1;
-	opacity: 0.6;
-	stroke: darkred;
-}
-.arc,
-.flyer {
-	stroke-linejoin: round;
+// Połączenia na mapie
+.arcs > path.arc {
 	fill: none;
-}
-.arc {
-}
-.flyer {
-}
-.flyer:hover {
+	opacity: 0.8;
+	stroke: orange;
+	stroke-width: 1;
 }
