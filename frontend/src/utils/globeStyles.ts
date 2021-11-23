@@ -157,3 +157,18 @@ export const applyWorldMapConnections = function (svg, path) {
 export const removeWorldMapConnections = function (svg) {
 	svg.selectAll('.arcs > path.arc');
 };
+
+export const drawOnMap = function (svg: d3.Selection<SVGSVGElement, any, any, any>, path, data, id) {
+	const g = svg.append('g');
+
+	g.attr('id', id);
+	g.selectAll('path').data(data.features).enter().append('path').attr('d', path).style('fill', 'black');
+};
+
+export const applyToDraw = function (svg: d3.Selection<SVGSVGElement, any, any, any>, path, id) {
+	svg.select(`g#${id}`).selectAll('path').attr('d', path);
+};
+
+export const removeFromMap = function (svg, id) {
+	svg.select(`g#${id}`).remove();
+};

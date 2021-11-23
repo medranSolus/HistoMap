@@ -3,6 +3,7 @@ import * as topojson from 'topojson-client';
 import * as d3 from 'd3';
 import { default as worldLow } from './world-110m.json';
 import { default as worldHigh } from './world-50m.json';
+import { default as countries } from './countries.geojson.json';
 import useD3 from '../common/useD3';
 import {
 	addGlobeShadow,
@@ -19,27 +20,51 @@ import {
 	removeGlobeShading,
 	addWorldMapConnections,
 	applyWorldMapConnections,
-	removeWorldMapConnections
+	removeWorldMapConnections,
+	drawOnMap,
+	applyToDraw,
+	removeFromMap
 } from '../utils/globeStyles';
 import '../styles/WorldMap.scss';
 
 const SENSITIVITY_LOW_RES = 58;
-const SENSITIVITY_HIGH_RES = 58;
 
-const SCALE_POINT = 900;
+const SCALE_POINT = 1100;
 
 export interface WorldMap3Props {
 	width: number;
 	height: number;
 }
 
+const POLAND_COORDS = [21.017532, 52.237049];
+
 var links = [
 	{
+		name: 'blabla1',
 		type: 'LineString',
 		coordinates: [
-			[15.72899, 50.899],
-			[15.50643, 51.93548]
+			// [Longitude Latitude]
+			[12.72899, 48],
+			POLAND_COORDS,
+			[13.4, 42.35]
 		]
+	},
+	{
+		type: 'LineString',
+		name: 'blabla2',
+		coordinates: [POLAND_COORDS, [2.35, 48.866667]]
+	},
+	{
+		type: 'LineString',
+		coordinates: [POLAND_COORDS, [-153.369141, 66.160507]]
+	},
+	{
+		type: 'LineString',
+		coordinates: [POLAND_COORDS, [-73.935242, 40.73061]]
+	},
+	{
+		type: 'LineString',
+		coordinates: [POLAND_COORDS, [182.983333, 1.325556]]
 	}
 ];
 
@@ -59,20 +84,16 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 	var scaleIsLow = true;
 	var shouldChangeMap = false;
 
-	// worldLow.features.filter(function (d) {
-	// 	console.log(d.properties.name);
-	// 	return d.properties.name == 'France';
-	// });
-
 	const ref = useD3(
 		(container) => {
 			container.selectAll('svg').remove();
 
 			let svg = container.append('svg').attr('width', width).attr('height', height);
 
-			console.log('Scale', scale);
-
 			let world = scale <= SCALE_POINT ? worldLow : worldHigh;
+
+			// odfiltrowanie krajów innych niż polska
+			countries.features = countries.features.filter((c) => c.id === 'POL');
 
 			// cień rzucany przez kulę
 			addGlobeShadow(svg, projection, [width, height]);
@@ -82,6 +103,9 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 
 			// nałożenie mapy na glob
 			let appendedPath = layerJsonOnGlobe(svg, path, world);
+
+			// nałożenie obszaru polski na mapę
+			drawOnMap(svg, path, countries, 'poland-land');
 
 			// imitacja odbijającego się światła
 			addGlobeHighlight(svg, projection, [width, height]);
@@ -97,12 +121,14 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 				if (shouldChangeMap) {
 					world = scale <= SCALE_POINT ? worldLow : worldHigh;
 					removeWorldMapConnections(svg);
+					removeFromMap(svg, 'poland-land');
 					removeExistingJsonOnGlobe(svg);
 					removeGlobeHighlight(svg);
 					removeGlobeShading(svg);
 
 					appendedPath = layerJsonOnGlobe(svg, path, world);
 
+					drawOnMap(svg, path, countries, 'poland-land');
 					addGlobeHighlight(svg, projection, [width, height]);
 					addGlobeShading(svg, projection, [width, height]);
 					addWorldMapConnections(svg, path, links);
@@ -119,6 +145,7 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 				scaleGlobeHighlight(svg, projection, [width, height]);
 				scaleGlobeShading(svg, projection, [width, height]);
 
+				applyToDraw(svg, path, 'poland-land');
 				applyWorldMapConnections(svg, path);
 			};
 			render();
