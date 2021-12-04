@@ -1,6 +1,6 @@
 import { Slider } from 'antd';
 import React, { useState } from 'react';
-import './App.scss';
+import './App.css';
 import WorldMap3 from './components/WorldMap3';
 import Container from './containers/Container';
 

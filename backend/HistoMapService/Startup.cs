@@ -32,8 +32,8 @@ namespace HistoMapService
             }));
             services.AddControllers();
             AddApplicationServices(services);
-            services.AddDbContext<Model.LSContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("SqlServer")));
+            //services.AddDbContext<Model.HMContext>(options =>
+            //    options.UseSqlServer(Configuration.GetConnectionString("SqlServer")));
         }
 
         private static void AddApplicationServices(IServiceCollection services)

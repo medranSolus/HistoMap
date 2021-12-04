@@ -1,8 +1,8 @@
 version: "3.9"
 
 networks:
-  database:
-    driver: bridge
+  #database:
+  #  driver: bridge
   api:
     driver: bridge
 
@@ -10,8 +10,8 @@ services:
   histomapservice:
     hostname: histomapservice
     build: backend/HistoMapService
-    depends_on:
-      - sqlserver
+    #depends_on:
+    #  - sqlserver
     ############################
     #### Bridge network fix ####
     # 
@@ -34,17 +34,17 @@ services:
     expose:
       - 4200
     networks:
-     - database
+    # - database
      - api
     ############################
 
-  sqlserver:
-    hostname: sqlserver
-    build: backend/SqlServer
-    expose:
-      - 1433
-    networks:
-     - database
+  #sqlserver:
+  #  hostname: sqlserver
+  #  build: backend/SqlServer
+  #  expose:
+  #    - 1433
+  #  networks:
+  #   - database
 
   webpage:
     hostname: webpage
@@ -53,5 +53,6 @@ services:
       - histomapservice
     ports:
       - "80:80"
+      - "3000:3000"
     networks:
      - api
