@@ -25,7 +25,7 @@ import {
 	applyToDraw,
 	removeFromMap
 } from '../utils/globeStyles';
-import '../styles/WorldMap.scss';
+import '../styles/WorldMap.css';
 
 const SENSITIVITY_LOW_RES = 58;
 
