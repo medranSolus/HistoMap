@@ -31,6 +31,15 @@ namespace HistoMapService
                     .AllowCredentials();
             }));
             services.AddControllers();
+            
+            services.AddSwaggerGen();
+
+            services.AddHttpsRedirection(options => 
+            {
+                options.HttpsPort = 5001;
+            });
+
+
             AddApplicationServices(services);
             //services.AddDbContext<Model.HMContext>(options =>
             //    options.UseSqlServer(Configuration.GetConnectionString("SqlServer")));
@@ -50,6 +59,9 @@ namespace HistoMapService
             app.UseRouting();
             app.UseCors();
             app.UseEndpoints(endpoints => endpoints.MapControllers());
+
+            app.UseSwagger();
+            app.UseSwaggerUI();
         }
     }
 }
