@@ -1,6 +1,10 @@
 import * as topojson from 'topojson-client';
 
-export const addGlobeShadow = function (svg, projection, [width, height]: [number, number]) {
+export type SVG = d3.Selection<SVGSVGElement, any, any, any>;
+
+export type SVGSelection = d3.Selection<d3.BaseType, unknown, d3.BaseType, any>;
+
+export const addGlobeShadow = function (svg: SVG, projection, [width, height]: [number, number]) {
 	var drop_shadow = svg
 		.append('defs')
 		.append('radialGradient')
@@ -38,7 +42,7 @@ export const scaleGlobShadow = function (
 		.attr('ry', SCALE * 0.25);
 };
 
-export const addGlobeBaseColor = function (svg, projection, [width, height]: [number, number]) {
+export const addGlobeBaseColor = function (svg: SVG, projection, [width, height]: [number, number]) {
 	var ocean_fill = svg
 		.append('defs')
 		.append('radialGradient')
@@ -65,7 +69,7 @@ export const scaleGlobeBaseColorCircle = function (
 	svg.select('circle#ocean_fill_circle').attr('r', projection.scale());
 };
 
-export const addGlobeHighlight = function (svg, projection, [width, height]: [number, number]) {
+export const addGlobeHighlight = function (svg: SVG, projection, [width, height]: [number, number]) {
 	var globe_highlight = svg
 		.append('defs')
 		.append('radialGradient')
@@ -96,7 +100,7 @@ export const scaleGlobeHighlight = function (
 	svg.select('circle#globe_highlight_circle').attr('r', projection.scale());
 };
 
-export const addGlobeShading = function (svg, projection, [width, height]: [number, number]) {
+export const addGlobeShading = function (svg: SVG, projection, [width, height]: [number, number]) {
 	var globe_shading = svg
 		.append('defs')
 		.append('radialGradient')
@@ -115,7 +119,7 @@ export const addGlobeShading = function (svg, projection, [width, height]: [numb
 		.style('fill', 'url(#globe_shading)');
 };
 
-export const scaleGlobeShading = function (svg, projection, [width, height]: [number, number]) {
+export const scaleGlobeShading = function (svg: SVG, projection, [width, height]: [number, number]) {
 	svg.select('circle#globe_shading_circle').attr('r', projection.scale());
 };
 
@@ -123,7 +127,7 @@ export const removeGlobeShading = function (svg) {
 	svg.select('#globe_shading_circle').remove();
 };
 
-export const layerJsonOnGlobe = function (svg, path, world) {
+export const layerJsonOnGlobe = function (svg: SVG, path, world) {
 	return svg
 		.append('path')
 		.datum(topojson.feature(world, world.objects.land))
@@ -135,7 +139,7 @@ export const removeExistingJsonOnGlobe = function (svg: d3.Selection<SVGSVGEleme
 	svg.select('path.land').remove();
 };
 
-export const addWorldMapConnections = function (svg, path, data) {
+export const addWorldMapConnections = function (svg: SVG, path, data, projection) {
 	return (
 		svg
 			.append('g')
@@ -147,10 +151,12 @@ export const addWorldMapConnections = function (svg, path, data) {
 			.attr('class', 'arc')
 			// @ts-ignore
 			.attr('d', path)
+			.attr('marker-end', 'url(#triangle)')
+		// .attr('transform', (d) => `translate(${projection([d.long, d.lat])}`)
 	);
 };
 
-export const applyWorldMapConnections = function (svg, path) {
+export const applyWorldMapConnections = function (svg: SVG, path) {
 	svg.selectAll('.arcs > path.arc').attr('d', path);
 };
 
@@ -158,17 +164,78 @@ export const removeWorldMapConnections = function (svg) {
 	svg.selectAll('.arcs > path.arc');
 };
 
-export const drawOnMap = function (svg: d3.Selection<SVGSVGElement, any, any, any>, path, data, id) {
+export const drawOnMap = function (svg: SVG, path, data, id) {
 	const g = svg.append('g');
 
 	g.attr('id', id);
 	g.selectAll('path').data(data.features).enter().append('path').attr('d', path).style('fill', 'black');
 };
 
-export const applyToDraw = function (svg: d3.Selection<SVGSVGElement, any, any, any>, path, id) {
-	svg.select(`g#${id}`).selectAll('path').attr('d', path);
+export const applyToDraw = function (svg: SVG, path, selector: string, callback?: (draw: SVGSelection) => void) {
+	const draw = svg.select(selector).selectAll('path');
+	draw.attr('d', path);
+	if (callback) callback(draw);
 };
 
-export const removeFromMap = function (svg, id) {
-	svg.select(`g#${id}`).remove();
+export const removeFromMap = function (svg: SVG, selector: string) {
+	svg.select(selector).remove();
+};
+
+export const defineMarkerFigure = function (svg: SVG, projection, features: any[]) {
+	svg.selectAll('g.marker-container').remove();
+	for (var j = 0; j < features.length; j++) {
+		const [x, y] = projection(features[j].geometry.coordinates);
+		const [x_copy, y_copy] = features[j].geometry.coordinates;
+		const count = features[j].properties.count;
+		const id = features[j].properties.id;
+
+		const g = svg.append('g').attr('class', 'marker-container');
+
+		g.append('path')
+			.attr('class', 'marker')
+			.attr('d', 'M0,0l-8.8-17.7C-12.1-24.3-7.4-32,0-32h0c7.4,0,12.1,7.7,8.8,14.3L0,0z')
+			.attr('transform', 'translate(' + x + ',' + y + ')')
+			.attr('x', x_copy)
+			.attr('y', y_copy)
+			.text(count);
+
+		g.append('text')
+			.attr('class', 'text')
+			.attr('x', x)
+			.attr('y', y)
+			.attr('dy', '-2%')
+			.attr('text-anchor', 'middle')
+			.text(count);
+	}
+};
+
+export const applyGlobeMovementToMarkers = function (d3, svg, projection, path) {
+	const markerContainers = svg.selectAll('g.marker-container');
+
+	markerContainers.each(function (d, i) {
+		const marker = d3.select(this).select('path.marker');
+		const text = d3.select(this).select('text');
+
+		const x = Number.parseFloat(marker.attr('x'));
+		const y = Number.parseFloat(marker.attr('y'));
+		const lon_lat = [x, y] as any;
+		let proj_pos = projection(lon_lat);
+
+		var hasPath =
+			path({
+				type: 'Point',
+				coordinates: lon_lat
+			}) != undefined;
+
+		if (hasPath) {
+			marker.style('display', 'inline');
+			text.style('display', 'inline');
+			text.attr('x', proj_pos[0]);
+			text.attr('y', proj_pos[1]);
+			marker.attr('transform', 'translate(' + proj_pos[0] + ',' + proj_pos[1] + ')');
+		} else {
+			marker.style('display', 'none');
+			text.style('display', 'none');
+		}
+	});
 };
