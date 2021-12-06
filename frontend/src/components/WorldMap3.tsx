@@ -19,13 +19,10 @@ import {
 	removeExistingJsonOnGlobe,
 	removeGlobeHighlight,
 	removeGlobeShading,
-	addWorldMapConnections,
-	applyWorldMapConnections,
-	removeWorldMapConnections,
 	drawOnMap,
 	applyToDraw,
 	removeFromMap,
-	defineMarkerFigure,
+	setMarkersOnMap,
 	applyGlobeMovementToMarkers,
 	getBoundingBoxMapCoords
 } from '../utils/globeStyles';
@@ -53,11 +50,11 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 	var path = geoPath.pointRadius(2);
 
 	var scale = 0;
-	var scaleIsLow = true;
 	var shouldChangeMap = false;
 	const TOP_LEFT = [100, 100] as [number, number];
 	const BOTTOM_RIGHT = [width - 100, height - 100] as [number, number];
 
+	var markers = berlin;
 	const ref = useD3(
 		(container) => {
 			container.selectAll('svg').remove();
@@ -84,7 +81,8 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 			let land = topojson.feature(world, world.objects.land);
 
 			// drawOnMap(svg, path, berlin, 'berlin');
-			defineMarkerFigure(svg, projection, berlin.features);
+			setMarkersOnMap(svg, projection, markers.features);
+			console.log(markers);
 
 			const rect = svg
 				.append('rect')
@@ -98,7 +96,7 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 			const render = () => {
 				if (shouldChangeMap) {
 					world = scale <= SCALE_POINT ? worldLow : worldHigh;
-					removeWorldMapConnections(svg);
+					// removeWorldMapConnections(svg);
 					removeFromMap(svg, 'g#poland-land');
 					removeExistingJsonOnGlobe(svg);
 					removeGlobeHighlight(svg);
@@ -109,7 +107,8 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 					drawOnMap(svg, path, countries, 'poland-land');
 					addGlobeHighlight(svg, projection, [width, height]);
 					addGlobeShading(svg, projection, [width, height]);
-					defineMarkerFigure(svg, projection, berlin.features);
+					setMarkersOnMap(svg, projection, markers.features);
+					console.log(markers);
 					land = topojson.feature(world, world.objects.land);
 
 					// console.log('Maps changes to ', scale <= SCALE_POINT ? 'low' : 'high');
@@ -143,9 +142,10 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 						applyGlobeMovementToMarkers(d3, svg, projection, path);
 					})
 					.on('end', function () {
-						fetchApi(getBoundingBoxMapCoords(TOP_LEFT, BOTTOM_RIGHT, projection, path)).then((res) =>
-							console.log(res)
-						);
+						fetchApi(getBoundingBoxMapCoords(TOP_LEFT, BOTTOM_RIGHT, projection, path)).then((res) => {
+							markers = res;
+							setMarkersOnMap(svg, projection, markers.features);
+						});
 					})
 			).call(
 				d3.zoom().on('zoom', (event) => {
@@ -160,10 +160,14 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 						true;
 					scale = SCALE;
 					render();
+					fetchApi(getBoundingBoxMapCoords(TOP_LEFT, BOTTOM_RIGHT, projection, path)).then((res) => {
+						markers = res;
+						setMarkersOnMap(svg, projection, markers.features);
+					});
 				})
 			);
 		},
-		[worldLow, worldHigh]
+		[worldLow, worldHigh, markers]
 	);
 
 	return <div ref={ref}></div>;

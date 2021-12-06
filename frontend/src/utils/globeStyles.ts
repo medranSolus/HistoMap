@@ -183,7 +183,7 @@ export const removeFromMap = function (svg: SVG, selector: string) {
 	svg.select(selector).remove();
 };
 
-export const defineMarkerFigure = function (svg: SVG, projection, features: any[]) {
+export const setMarkersOnMap = function (svg: SVG, projection, features: any[]) {
 	svg.selectAll('g.marker-container').remove();
 	for (var j = 0; j < features.length; j++) {
 		const [x, y] = projection(features[j].geometry.coordinates);
@@ -226,6 +226,7 @@ export const applyGlobeMovementToMarkers = function (d3, svg, projection, path) 
 			path({
 				type: 'Point',
 				coordinates: lon_lat
+				// eslint-disable-next-line
 			}) != undefined;
 
 		if (hasPath) {
@@ -247,6 +248,7 @@ export const getBoundingBoxMapCoords = function (topLeft: Point, topRight: Point
 		path({
 			type: 'Point',
 			coordinates: coords2
+			// eslint-disable-next-line
 		}) != undefined;
 
 	const coords3 = projection.invert(topRight);
@@ -254,6 +256,7 @@ export const getBoundingBoxMapCoords = function (topLeft: Point, topRight: Point
 		path({
 			type: 'Point',
 			coordinates: coords2
+			// eslint-disable-next-line
 		}) != undefined;
 
 	return {
