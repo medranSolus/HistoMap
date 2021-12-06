@@ -26,9 +26,11 @@ import {
 	applyToDraw,
 	removeFromMap,
 	defineMarkerFigure,
-	applyGlobeMovementToMarkers
+	applyGlobeMovementToMarkers,
+	getBoundingBoxMapCoords
 } from '../utils/globeStyles';
 import '../styles/WorldMap.css';
+import { fetchApi } from '../api';
 
 const SCALE_POINT = 1100;
 const SENSITIVITY_LOW_RES = 50;
@@ -53,6 +55,8 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 	var scale = 0;
 	var scaleIsLow = true;
 	var shouldChangeMap = false;
+	const TOP_LEFT = [100, 100] as [number, number];
+	const BOTTOM_RIGHT = [width - 100, height - 100] as [number, number];
 
 	const ref = useD3(
 		(container) => {
@@ -82,6 +86,15 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 			// drawOnMap(svg, path, berlin, 'berlin');
 			defineMarkerFigure(svg, projection, berlin.features);
 
+			const rect = svg
+				.append('rect')
+				.attr('x', TOP_LEFT[0])
+				.attr('y', TOP_LEFT[1])
+				.attr('width', BOTTOM_RIGHT[0] - TOP_LEFT[0])
+				.attr('height', BOTTOM_RIGHT[1] - TOP_LEFT[1])
+				.attr('stroke', 'red')
+				.attr('fill', 'transparent');
+
 			const render = () => {
 				if (shouldChangeMap) {
 					world = scale <= SCALE_POINT ? worldLow : worldHigh;
@@ -99,7 +112,7 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 					defineMarkerFigure(svg, projection, berlin.features);
 					land = topojson.feature(world, world.objects.land);
 
-					console.log('Maps changes to ', scale <= SCALE_POINT ? 'low' : 'high');
+					// console.log('Maps changes to ', scale <= SCALE_POINT ? 'low' : 'high');
 					shouldChangeMap = false;
 				}
 
@@ -111,20 +124,29 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 				scaleGlobeShading(svg, projection, [width, height]);
 
 				applyToDraw(svg, path, 'g#poland-land');
+				rect.raise();
 			};
+
 			render();
 			svg.call(
-				d3.drag().on('drag', (event) => {
-					const rotate = projection.rotate();
-					// const SENSITIVITY = scaleIsLow ?
-					const k = SENSITIVITY_LOW_RES / projection.scale();
-					projection.rotate([rotate[0] + event.dx * k, rotate[1] - event.dy * k]);
+				d3
+					.drag()
+					.on('drag', (event) => {
+						const rotate = projection.rotate();
 
-					svg.selectAll('.land').attr('d', path);
-					applyToDraw(svg, path, 'g#poland-land');
+						const k = SENSITIVITY_LOW_RES / projection.scale();
+						projection.rotate([rotate[0] + event.dx * k, rotate[1] - event.dy * k]);
 
-					applyGlobeMovementToMarkers(d3, svg, projection, path);
-				})
+						svg.selectAll('.land').attr('d', path);
+						applyToDraw(svg, path, 'g#poland-land');
+
+						applyGlobeMovementToMarkers(d3, svg, projection, path);
+					})
+					.on('end', function () {
+						fetchApi(getBoundingBoxMapCoords(TOP_LEFT, BOTTOM_RIGHT, projection, path)).then((res) =>
+							console.log(res)
+						);
+					})
 			).call(
 				d3.zoom().on('zoom', (event) => {
 					const SCALE = initialScale * event.transform.k;
