@@ -4,6 +4,8 @@ export type SVG = d3.Selection<SVGSVGElement, any, any, any>;
 
 export type SVGSelection = d3.Selection<d3.BaseType, unknown, d3.BaseType, any>;
 
+export type Point = [number, number];
+
 export const addGlobeShadow = function (svg: SVG, projection, [width, height]: [number, number]) {
 	var drop_shadow = svg
 		.append('defs')
@@ -187,7 +189,6 @@ export const defineMarkerFigure = function (svg: SVG, projection, features: any[
 		const [x, y] = projection(features[j].geometry.coordinates);
 		const [x_copy, y_copy] = features[j].geometry.coordinates;
 		const count = features[j].properties.count;
-		const id = features[j].properties.id;
 
 		const g = svg.append('g').attr('class', 'marker-container');
 
@@ -238,4 +239,35 @@ export const applyGlobeMovementToMarkers = function (d3, svg, projection, path) 
 			text.style('display', 'none');
 		}
 	});
+};
+
+export const getBoundingBoxMapCoords = function (topLeft: Point, topRight: Point, projection, path) {
+	const coords2 = projection.invert(topLeft);
+	const isTopLeftWithinGlobe =
+		path({
+			type: 'Point',
+			coordinates: coords2
+		}) != undefined;
+
+	const coords3 = projection.invert(topRight);
+	const isBottomRightWithinGlobe =
+		path({
+			type: 'Point',
+			coordinates: coords2
+		}) != undefined;
+
+	return {
+		TopLeft: isTopLeftWithinGlobe
+			? {
+					x: coords2[0],
+					y: coords2[1]
+			  }
+			: null,
+		BottomRight: isBottomRightWithinGlobe
+			? {
+					x: coords3[0],
+					y: coords3[1]
+			  }
+			: null
+	};
 };
