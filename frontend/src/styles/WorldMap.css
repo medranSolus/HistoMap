@@ -26,7 +26,6 @@
 	opacity: 0.6;
 }
 
-// Połączenia na mapie
 .arcs > path.arc {
 	fill: none;
 	opacity: 0.8;
@@ -34,4 +33,22 @@
 	stroke-width: 3;
 	stroke-linecap: round;
 	stroke-linejoin: round;
+}
+
+g.marker-container > .marker {
+	fill: #31558d;
+	transition: fill-opacity 0.2s ease-in-out;
+	fill-opacity: 0.75;
+}
+g.marker-container:hover > .marker {
+	fill: #8d3155;
+	fill-opacity: 1;
+	cursor: pointer;
+}
+
+g.marker-container > text.text {
+	transition: fill-opacity 0.2s ease-in-out;
+	font-size: 12px;
+	fill: rgb(214, 214, 214);
+	cursor: pointer;
 }

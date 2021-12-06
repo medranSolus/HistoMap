@@ -1,0 +1,38 @@
+{
+	"type": "FeatureCollection",
+	"features": [
+		{
+			"geometry": {
+				"type": "Point",
+				"coordinates": [13.4, 42.35]
+			},
+			"type": "Feature",
+			"properties": {
+				"count": 9,
+				"name": "Wiebestr./Huttenstr. (Berlin)"
+			}
+		},
+		{
+			"geometry": {
+				"type": "Point",
+				"coordinates": [37.89935, 7.01931]
+			},
+			"type": "Feature",
+			"properties": {
+				"count": 3,
+				"name": "Wiebestr./Huttenstr. (Berlin)"
+			}
+		},
+		{
+			"geometry": {
+				"type": "Point",
+				"coordinates": [-10.21128, 39.02026]
+			},
+			"type": "Feature",
+			"properties": {
+				"count": 1,
+				"name": "Wiebestr./Huttenstr. (Berlin)"
+			}
+		}
+	]
+}

@@ -5,7 +5,7 @@ import WorldMap3 from './components/WorldMap3';
 import Container from './containers/Container';
 
 function App() {
-	let width = 1400;
+	let width = 700;
 	let height = 600;
 
 	const [selectedYear, setSelectedYear] = useState(1900);
