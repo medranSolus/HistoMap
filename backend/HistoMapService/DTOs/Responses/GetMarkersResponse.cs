@@ -4,6 +4,7 @@ namespace HistoMapService.DTOs.Responses
 {
     public class GetMarkersResponse
     {
+        public string Type { get; set; }
         public List<MarkerForGetMarkersResponse> Features { get; set; }
     }
 
@@ -19,6 +20,7 @@ namespace HistoMapService.DTOs.Responses
     }
 
     public class GeometryForGetMarkersResponse {
+        public string Type { get; set; }
         public CoordinatesForGetMarkersResponse Coordinates { get; set; }
     }
 
