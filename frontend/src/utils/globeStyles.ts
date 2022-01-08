@@ -183,22 +183,31 @@ export const removeFromMap = function (svg: SVG, selector: string) {
 	svg.select(selector).remove();
 };
 
-export const setMarkersOnMap = function (svg: SVG, projection, features: any[]) {
+export const setMarkersOnMap = function (
+	svg: SVG,
+	projection,
+	features: any[],
+	onMarkerClick?: (feature) => () => void
+) {
 	svg.selectAll('g.marker-container').remove();
 	for (var j = 0; j < features.length; j++) {
-		const [x, y] = projection(features[j].geometry.coordinates);
-		const [x_copy, y_copy] = features[j].geometry.coordinates;
-		const count = features[j].properties.count;
+		const { longitude, latitude } = features[j].geometry.coordinates;
+		const [x, y] = projection([longitude, latitude]);
+		const [x_copy, y_copy] = [longitude, latitude];
+		const count = features[j].properties?.count;
 
 		const g = svg.append('g').attr('class', 'marker-container');
 
-		g.append('path')
+		const path = g
+			.append('path')
 			.attr('class', 'marker')
 			.attr('d', 'M0,0l-8.8-17.7C-12.1-24.3-7.4-32,0-32h0c7.4,0,12.1,7.7,8.8,14.3L0,0z')
 			.attr('transform', 'translate(' + x + ',' + y + ')')
 			.attr('x', x_copy)
 			.attr('y', y_copy)
 			.text(count);
+
+		path.on('click', onMarkerClick ? onMarkerClick(features[j]) : undefined);
 
 		g.append('text')
 			.attr('class', 'text')
@@ -242,7 +251,7 @@ export const applyGlobeMovementToMarkers = function (d3, svg, projection, path) 
 	});
 };
 
-export const getBoundingBoxMapCoords = function (topLeft: Point, topRight: Point, projection, path) {
+export const getBoundingBoxMapCoords = function (topLeft: Point, bottomRight: Point, projection, path) {
 	const coords2 = projection.invert(topLeft);
 	const isTopLeftWithinGlobe =
 		path({
@@ -251,11 +260,11 @@ export const getBoundingBoxMapCoords = function (topLeft: Point, topRight: Point
 			// eslint-disable-next-line
 		}) != undefined;
 
-	const coords3 = projection.invert(topRight);
+	const coords3 = projection.invert(bottomRight);
 	const isBottomRightWithinGlobe =
 		path({
 			type: 'Point',
-			coordinates: coords2
+			coordinates: coords3
 			// eslint-disable-next-line
 		}) != undefined;
 

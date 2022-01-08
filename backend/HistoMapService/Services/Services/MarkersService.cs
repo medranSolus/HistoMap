@@ -32,7 +32,7 @@ namespace HistoMapService.Services.Services
 
                     foreach(var book in newObject)
                     {
-                        if(request.BoundingBox.TopLeft.x >= book.coordinates[0] && request.BoundingBox.TopLeft.y >= book.coordinates[1] && request.BoundingBox.BottomRight.x <= book.coordinates[0] && request.BoundingBox.BottomRight.y <= book.coordinates[1]) {
+                        if(request.BoundingBox.TopLeft.x <= book.coordinates[0] && request.BoundingBox.TopLeft.y >= book.coordinates[1] && request.BoundingBox.BottomRight.x >= book.coordinates[0] && request.BoundingBox.BottomRight.y <= book.coordinates[1]) {
                             response.Features.Add(new MarkerForGetMarkersResponse() {
                                 Title = book.title,
                                 Name = book.name,
