@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as topojson from 'topojson-client';
 import * as d3 from 'd3';
 import { default as worldLow } from './world-110m.json';
@@ -35,9 +35,10 @@ const SENSITIVITY_LOW_RES = 50;
 export interface WorldMap3Props {
 	width: number;
 	height: number;
+	selectedYear: number;
 }
 
-const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
+const WorldMap3: React.FC<WorldMap3Props> = ({ height, width, selectedYear }) => {
 	var projection = d3
 		.geoOrthographic()
 		.translate([width / 2, height / 2])
@@ -53,8 +54,21 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 	var shouldChangeMap = false;
 	const TOP_LEFT = [100, 100] as [number, number];
 	const BOTTOM_RIGHT = [width - 100, height - 100] as [number, number];
+	const [selectedMarker, setSelectedMarker] = useState(null);
+	const fetchMarkers = (container) => {
+		const BoundingBox = getBoundingBoxMapCoords(TOP_LEFT, BOTTOM_RIGHT, projection, path);
 
-	var markers = berlin;
+		fetchApi({
+			BoundingBox,
+			Year: selectedYear
+		}).then((res) => {
+			markers = res;
+			const handleMarkerClick = (feature) => () => setSelectedMarker(feature);
+			setMarkersOnMap(container, projection, markers.features, handleMarkerClick);
+		});
+	};
+
+	var markers = { features: [] };
 	const ref = useD3(
 		(container) => {
 			container.selectAll('svg').remove();
@@ -108,7 +122,6 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 					addGlobeHighlight(svg, projection, [width, height]);
 					addGlobeShading(svg, projection, [width, height]);
 					setMarkersOnMap(svg, projection, markers.features);
-					console.log(markers);
 					land = topojson.feature(world, world.objects.land);
 
 					// console.log('Maps changes to ', scale <= SCALE_POINT ? 'low' : 'high');
@@ -142,10 +155,7 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 						applyGlobeMovementToMarkers(d3, svg, projection, path);
 					})
 					.on('end', function () {
-						fetchApi(getBoundingBoxMapCoords(TOP_LEFT, BOTTOM_RIGHT, projection, path)).then((res) => {
-							markers = res;
-							setMarkersOnMap(svg, projection, markers.features);
-						});
+						fetchMarkers(svg);
 					})
 			).call(
 				d3.zoom().on('zoom', (event) => {
@@ -160,17 +170,20 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width }) => {
 						true;
 					scale = SCALE;
 					render();
-					fetchApi(getBoundingBoxMapCoords(TOP_LEFT, BOTTOM_RIGHT, projection, path)).then((res) => {
-						markers = res;
-						setMarkersOnMap(svg, projection, markers.features);
-					});
+
+					fetchMarkers(svg);
 				})
 			);
 		},
 		[worldLow, worldHigh, markers]
 	);
 
-	return <div ref={ref}></div>;
+	return (
+		<>
+			<div ref={ref}></div>
+			<div>{selectedMarker && JSON.stringify(selectedMarker)}</div>
+		</>
+	);
 };
 
 export default WorldMap3;

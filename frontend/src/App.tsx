@@ -27,7 +27,7 @@ function App() {
 							onChange={handleChange}
 						/>
 					</div>
-					<WorldMap3 width={width} height={height} />
+					<WorldMap3 width={width} height={height} selectedYear={selectedYear} />
 				</div>
 			</Container>
 		</div>
