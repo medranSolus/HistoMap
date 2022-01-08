@@ -6,7 +6,7 @@ namespace HistoMapService.Services.Interfaces
 {
     public interface IMarkersService
     {
-        Task<GetMarkersResponse> GetMarkersAsync(GetMarkersRequest request);
+        dynamic GetMarkersAsync(GetMarkersRequest request);
 
     }
 }
