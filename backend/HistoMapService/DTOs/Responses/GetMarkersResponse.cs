@@ -10,7 +10,8 @@ namespace HistoMapService.DTOs.Responses
 
     public class MarkerForGetMarkersResponse {
         public GeometryForGetMarkersResponse Geometry { get; set; }
-        public string Type { get; set; }
+        public string Title { get; set; }
+        public string Name { get; set; }
         public List<PropertiesForGetMarkersResponse> Properties { get; set; }
     }
 
