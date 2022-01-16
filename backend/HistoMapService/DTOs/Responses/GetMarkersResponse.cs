@@ -8,10 +8,16 @@ namespace HistoMapService.DTOs.Responses
         public List<MarkerForGetMarkersResponse> Features { get; set; }
     }
 
-    public class MarkerForGetMarkersResponse {
-        public GeometryForGetMarkersResponse Geometry { get; set; }
+    public class BookInfo
+    {
         public string Title { get; set; }
         public string Name { get; set; }
+    }
+
+    public class MarkerForGetMarkersResponse {
+        public GeometryForGetMarkersResponse Geometry { get; set; }
+        public int BookCount { get; set; }
+        public List<BookInfo> Books { get; set; }
         public List<PropertiesForGetMarkersResponse> Properties { get; set; }
     }
 
