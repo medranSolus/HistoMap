@@ -53,3 +53,7 @@ g.marker-container > text.text {
 	fill: rgb(214, 214, 214);
 	cursor: pointer;
 }
+
+rect.rectangle-container {
+	border: 1px solid gray;
+}

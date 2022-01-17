@@ -197,7 +197,7 @@ export const setMarkersOnMap = function (
 		const { longitude, latitude } = features[j].geometry.coordinates;
 		const [x, y] = projection([longitude, latitude]);
 		const [x_copy, y_copy] = [longitude, latitude];
-		const count = features[j].properties?.count;
+		const count = features[j].bookCount;
 
 		const g = svg.append('g').attr('class', 'marker-container');
 
@@ -210,10 +210,18 @@ export const setMarkersOnMap = function (
 			.attr('y', y_copy)
 			.text(count);
 
-		path.on('click', function () {
+		const generatedHandlerForFeature = ((svg, projection, feature) => {
+			return () => onMarkerClick(svg, projection, feature);
+		})(svg, projection, features[j]);
+
+		path.on('click', function (e) {
+			e.stopPropagation();
 			console.log('click');
 
-			onMarkerClick(svg, projection, features[j]);
+			generatedHandlerForFeature();
+		});
+		path.on('drag', (e) => {
+			e.defaultPrevented();
 		});
 
 		g.append('text')
@@ -222,6 +230,7 @@ export const setMarkersOnMap = function (
 			.attr('y', y)
 			.attr('dy', '-2%')
 			.attr('text-anchor', 'middle')
+
 			.text(count);
 	}
 };
@@ -290,3 +299,39 @@ export const getBoundingBoxMapCoords = function (topLeft: Point, bottomRight: Po
 			: null
 	};
 };
+
+export function wrap(d3) {
+	return function (text, width) {
+		text.each(function () {
+			var text = d3.select(this),
+				words = text.text().split(/\s+/).reverse(),
+				word,
+				line = [],
+				lineNumber = 0,
+				lineHeight = 1, // ems
+				y = text.attr('y'),
+				dy = parseFloat(text.attr('dy')),
+				tspan = text
+					.text(null)
+					.append('tspan')
+					.attr('x', 0)
+					.attr('y', y)
+					.attr('dy', dy + 'em');
+			while ((word = words.pop())) {
+				line.push(word);
+				tspan.text(line.join(' '));
+				if (tspan.node().getComputedTextLength() > width) {
+					line.pop();
+					tspan.text(line.join(' '));
+					line = [word];
+					tspan = text
+						.append('tspan')
+						.attr('x', 0)
+						.attr('y', y)
+						.attr('dy', ++lineNumber * lineHeight + dy + 'em')
+						.text(word);
+				}
+			}
+		});
+	};
+}

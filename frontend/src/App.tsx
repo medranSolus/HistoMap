@@ -41,13 +41,7 @@ function App() {
 							</Select>
 						</Col>
 					</Row>
-					<WorldMap5
-						width={width}
-						height={height}
-						selectedYear={selectedYear}
-						filters={filters}
-						displayActiveRegion
-					/>
+					<WorldMap5 width={width} height={height} selectedYear={selectedYear} filters={filters} />
 				</div>
 			</Container>
 		</div>
