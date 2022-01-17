@@ -4,7 +4,7 @@
 		{
 			"geometry": {
 				"type": "Point",
-				"coordinates": [13.4, 42.35]
+				"coordinates": { "longitude": 13.4, "latitude": 42.35 }
 			},
 			"type": "Feature",
 			"properties": {
@@ -15,7 +15,7 @@
 		{
 			"geometry": {
 				"type": "Point",
-				"coordinates": [37.89935, 7.01931]
+				"coordinates": { "longitude": 37.89935, "latitude": 7.01931 }
 			},
 			"type": "Feature",
 			"properties": {
@@ -26,7 +26,7 @@
 		{
 			"geometry": {
 				"type": "Point",
-				"coordinates": [-10.21128, 39.02026]
+				"coordinates": { "longitude": -10.21128, "latitude": 39.02026 }
 			},
 			"type": "Feature",
 			"properties": {
