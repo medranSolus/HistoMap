@@ -53,6 +53,8 @@ namespace HistoMapService.Services.Services
                             Tuple<float, float> coords = new((float)Math.Round(book.coordinates[0], digits),
                                 (float)Math.Round(book.coordinates[1], digits));
 
+                            if (!bookMap.ContainsKey(coords))
+                                bookMap.Add(coords, new List<BookInfo>());
                             bookMap[coords].Add(new BookInfo
                             {
                                 Title = book.title,
