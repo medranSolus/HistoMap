@@ -1,6 +1,6 @@
 import * as topojson from 'topojson-client';
 
-export type SVG = d3.Selection<SVGSVGElement, any, any, any>;
+export type SVG = any; //d3.Selection<SVGSVGElement, any, any, any>;
 
 export type SVGSelection = d3.Selection<d3.BaseType, unknown, d3.BaseType, any>;
 
@@ -132,7 +132,7 @@ export const removeGlobeShading = function (svg) {
 export const layerJsonOnGlobe = function (svg: SVG, path, world) {
 	return svg
 		.append('path')
-		.datum(topojson.feature(world, world.objects.land))
+		.datum(topojson.feature(world, world.objects.countries))
 		.attr('class', 'land noclicks')
 		.attr('d', path);
 };
@@ -166,11 +166,14 @@ export const removeWorldMapConnections = function (svg) {
 	svg.selectAll('.arcs > path.arc');
 };
 
-export const drawOnMap = function (svg: SVG, path, data, id) {
+export const drawOnMap = function (svg: SVG, path, data, id, color?: string, stroke?: string) {
 	const g = svg.append('g');
 
 	g.attr('id', id);
-	g.selectAll('path').data(data.features).enter().append('path').attr('d', path).style('fill', 'black');
+	const object = g.selectAll('path').data(data.features).enter().append('path').attr('d', path);
+
+	if (color) object.attr('fill', color);
+	if (stroke) object.attr('stroke', stroke);
 };
 
 export const applyToDraw = function (svg: SVG, path, selector: string, callback?: (draw: SVGSelection) => void) {
