@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as topojson from 'topojson-client';
 import * as d3 from 'd3';
 import { default as worldLow } from './world-110m.json';
@@ -38,8 +38,8 @@ export interface WorldMap5Props {
 
 const WorldMap5: React.FC<WorldMap5Props> = ({ height, width, selectedYear, filters, displayActiveRegion }) => {
 	const CENTER_OF_SCREEN = [width / 2, height / 2] as [number, number];
-	const projection = d3.geoMercator().center([0, 5]).scale(150).rotate([-53, 0]);
-	projection.scale(SCALE_POINT * 0.15).translate([563, 430]);
+	const projection = d3.geoMercator().translate([563, 430]);
+	// .scale(SCALE_POINT * 0.15)
 
 	var geoPath = d3.geoPath().projection(projection);
 	var path = geoPath.pointRadius(2);
@@ -55,13 +55,18 @@ const WorldMap5: React.FC<WorldMap5Props> = ({ height, width, selectedYear, filt
 		fetchApi({
 			BoundingBox,
 			Year: selectedYear,
-			Filters: filters
+			Filters: filters,
+			Radius: Number.parseInt(projection.scale().toString())
 		}).then((res) => {
-			markers = res;
+			markers = berlin;
 			const handleMarkerClick = (feature) => () => setSelectedMarker(feature);
 			setMarkersOnMap(container, projection, markers.features, handleMarkerClick);
 		});
 	};
+
+	useEffect(() => {
+		projection.fitExtent([TOP_LEFT, BOTTOM_RIGHT], poland1715GeoJSON as any);
+	}, []);
 
 	var markers = { features: [] };
 	const ref = useD3(
@@ -110,6 +115,7 @@ const WorldMap5: React.FC<WorldMap5Props> = ({ height, width, selectedYear, filt
 			let rect;
 			if (displayActiveRegion) {
 				rect = drawRect(g, TOP_LEFT, BOTTOM_RIGHT);
+				//@ts-ignore
 				drawPoint(g, CENTER_OF_SCREEN);
 			}
 
@@ -126,7 +132,7 @@ const WorldMap5: React.FC<WorldMap5Props> = ({ height, width, selectedYear, filt
 				// .scaleExtent([1, 8])
 				.on('zoom', function (e) {
 					let t = e.transform; // get current zoom state
-					console.log(t);
+					// console.log(t.k, t.x, t.y);
 					projection.scale(t.k * SCALE_POINT).translate([t.x, t.y]); // set scale and translate of projection.
 					render();
 				})

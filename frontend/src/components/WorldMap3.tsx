@@ -55,6 +55,30 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width, selectedYear }) =>
 	const TOP_LEFT = [100, 100] as [number, number];
 	const BOTTOM_RIGHT = [width - 100, height - 100] as [number, number];
 	const [selectedMarker, setSelectedMarker] = useState(null);
+
+	const handleMarkerClick = function (svg: any, projection, feature) {
+		// {
+		// 	"geometry": {
+		// 		"type": "Point",
+		// 		"coordinates": { "longitude": 13.4, "latitude": 42.35 }
+		// 	},
+		// 	"type": "Feature",
+		// 	"properties": {
+		// 		"count": 9,
+		// 		"name": "Wiebestr./Huttenstr. (Berlin)"
+		// 	}
+		// }
+		const { longitude, latitude } = feature.geometry.coordinates;
+		const [x, y] = projection([longitude, latitude]);
+		console.log(x, y);
+		svg.append('rect')
+			.attr('width', 100)
+			.attr('height', 100)
+			.attr('fill', 'white')
+			.attr('stroke', 'black')
+			.attr('transform', 'translate(' + x + ',' + y + ')');
+	};
+
 	const fetchMarkers = (container) => {
 		const BoundingBox = getBoundingBoxMapCoords(TOP_LEFT, BOTTOM_RIGHT, projection, path);
 
@@ -63,7 +87,7 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width, selectedYear }) =>
 			Year: selectedYear
 		}).then((res) => {
 			markers = res;
-			const handleMarkerClick = (feature) => () => setSelectedMarker(feature);
+			// const handleMarkerClick = (feature) => () => setSelectedMarker(feature);
 			setMarkersOnMap(container, projection, markers.features, handleMarkerClick);
 		});
 	};

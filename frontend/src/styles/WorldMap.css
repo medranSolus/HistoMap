@@ -39,6 +39,7 @@ g.marker-container > .marker {
 	fill: #31558d;
 	transition: fill-opacity 0.2s ease-in-out;
 	fill-opacity: 0.75;
+	pointer-events: visible !important;
 }
 g.marker-container:hover > .marker {
 	fill: #8d3155;

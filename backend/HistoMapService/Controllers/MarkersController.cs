@@ -21,7 +21,7 @@ namespace HistoMapService.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> GetMarkers([FromBody] GetMarkersRequest request)
+        public Task<IActionResult> GetMarkers([FromBody] GetMarkersRequest request)
         {
             var response = _markersService.GetMarkersAsync(request);
             return Ok(response);            

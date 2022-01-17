@@ -190,7 +190,7 @@ export const setMarkersOnMap = function (
 	svg: SVG,
 	projection,
 	features: any[],
-	onMarkerClick?: (feature) => () => void
+	onMarkerClick?: (svg, projection, feature) => void
 ) {
 	svg.selectAll('g.marker-container').remove();
 	for (var j = 0; j < features.length; j++) {
@@ -210,7 +210,11 @@ export const setMarkersOnMap = function (
 			.attr('y', y_copy)
 			.text(count);
 
-		path.on('click', onMarkerClick ? onMarkerClick(features[j]) : undefined);
+		path.on('click', function () {
+			console.log('click');
+
+			onMarkerClick(svg, projection, features[j]);
+		});
 
 		g.append('text')
 			.attr('class', 'text')
