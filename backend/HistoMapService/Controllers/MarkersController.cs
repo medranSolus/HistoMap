@@ -1,10 +1,8 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using HistoMapService.DTOs.Requests;
-using HistoMapService.DTOs.Responses;
 using HistoMapService.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace HistoMapService.Controllers
 {
@@ -21,10 +19,9 @@ namespace HistoMapService.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public Task<IActionResult> GetMarkers([FromBody] GetMarkersRequest request)
+        public IActionResult GetMarkers([FromBody] GetMarkersRequest request)
         {
-            var response = _markersService.GetMarkersAsync(request);
-            return Ok(response);            
+            return Ok(_markersService.GetMarkers(request));
         }
     }
 }

@@ -8,5 +8,4 @@ namespace HistoMapService.Model
         public string name { get; set; }
         public List<float> coordinates { get; set; }
     }
-
 }
