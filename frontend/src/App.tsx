@@ -1,16 +1,20 @@
-import { Slider } from 'antd';
+import { Slider, Select, Row, Col } from 'antd';
 import React, { useState } from 'react';
 import './App.css';
-import WorldMap3 from './components/WorldMap3';
+import WorldMap5 from './components/WorldMap5';
 import Container from './containers/Container';
 
 function App() {
-	let width = 700;
-	let height = 600;
+	let width = 1000;
+	let height = 562;
+	let filters = [];
 
 	const [selectedYear, setSelectedYear] = useState(1900);
 
 	const handleChange = (value) => setSelectedYear(value);
+	const handleChangeFilters = (values) => {
+		filters = values;
+	};
 
 	return (
 		<div className='App'>
@@ -27,7 +31,23 @@ function App() {
 							onChange={handleChange}
 						/>
 					</div>
-					<WorldMap3 width={width} height={height} selectedYear={selectedYear} />
+					<Row justify='space-around' style={{ marginBottom: '1rem' }}>
+						<Col flex='500px'>
+							<Select mode='multiple' className='w-100' onChange={handleChangeFilters}>
+								<Select.Option value={0}>Kraje</Select.Option>
+								<Select.Option value={1}>Miasta</Select.Option>
+								<Select.Option value={2}>Krainy geografice i elementy przyrody</Select.Option>
+								<Select.Option value={3}>Kontynenty i większe regiony</Select.Option>
+							</Select>
+						</Col>
+					</Row>
+					<WorldMap5
+						width={width}
+						height={height}
+						selectedYear={selectedYear}
+						filters={filters}
+						displayActiveRegion
+					/>
 				</div>
 			</Container>
 		</div>

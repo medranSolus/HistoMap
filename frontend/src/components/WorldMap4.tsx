@@ -31,6 +31,10 @@ import { fetchApi } from '../api';
 
 const SCALE_POINT = 1100;
 const SENSITIVITY_LOW_RES = 50;
+const rotate = 90;
+const maxlat = 83;
+
+var cnt = 0;
 
 export interface WorldMap3Props {
 	width: number;
@@ -38,12 +42,17 @@ export interface WorldMap3Props {
 	selectedYear: number;
 }
 
-const WorldMap3: React.FC<WorldMap3Props> = ({ height, width, selectedYear }) => {
-	var projection = d3
-		.geoMercator()
-		.translate([width / 2, height / 2])
-		.clipAngle(90)
-		.scale(220);
+function mercatorBounds(projection, maxlat) {
+	var yaw = projection.rotate()[0],
+		xymax = projection([-yaw + 180 - 1e-6, -maxlat]),
+		xymin = projection([-yaw - 180 + 1e-6, maxlat]);
+
+	return [xymin, xymax];
+}
+
+const WorldMap4: React.FC<WorldMap3Props> = ({ height, width, selectedYear }) => {
+	const CENTER_OF_SCREEN = [width / 2, height / 2] as [number, number];
+	var projection = d3.geoMercator().rotate([rotate, 0]).translate(CENTER_OF_SCREEN).scale(165);
 
 	const initialScale = projection.scale();
 
@@ -51,10 +60,10 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width, selectedYear }) =>
 	var path = geoPath.pointRadius(2);
 
 	var scale = 0;
-	var shouldChangeMap = false;
 	const TOP_LEFT = [100, 100] as [number, number];
 	const BOTTOM_RIGHT = [width - 100, height - 100] as [number, number];
 	const [selectedMarker, setSelectedMarker] = useState(null);
+
 	const fetchMarkers = (container) => {
 		const BoundingBox = getBoundingBoxMapCoords(TOP_LEFT, BOTTOM_RIGHT, projection, path);
 
@@ -75,28 +84,20 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width, selectedYear }) =>
 
 			let svg = container.append('svg').attr('width', width).attr('height', height);
 
-			let world = scale <= SCALE_POINT ? worldLow : worldHigh;
+			fetchMarkers(svg);
 
-			// cień rzucany przez kulę
-			// addGlobeShadow(svg, projection, [width, height]);
-			// kolor oceanu
-			// addSphereOceanColor(svg, projection, [width, height]);
+			let world = scale <= SCALE_POINT ? worldLow : worldHigh;
 
 			// nałożenie mapy na glob
 			let appendedPath = layerJsonOnGlobe(svg, path, world);
 
 			// nałożenie obszaru polski na mapę
 			drawOnMap(svg, path, countries, 'poland-land');
-			// imitacja odbijającego się światła
-			// addGlobeHighlight(svg, projection, [width, height]);
-			// shader globu
-			// addGlobeShading(svg, projection, [width, height]);
 
 			let land = topojson.feature(world, world.objects.land);
 
 			// drawOnMap(svg, path, berlin, 'berlin');
 			setMarkersOnMap(svg, projection, markers.features);
-			console.log(markers);
 
 			const rect = svg
 				.append('rect')
@@ -106,78 +107,58 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width, selectedYear }) =>
 				.attr('height', BOTTOM_RIGHT[1] - TOP_LEFT[1])
 				.attr('stroke', 'red')
 				.attr('fill', 'transparent');
+			const point = svg
+				.append('circle')
+				.attr('cx', CENTER_OF_SCREEN[0])
+				.attr('cy', CENTER_OF_SCREEN[1])
+				.attr('r', 2)
+				.attr('fill', 'red');
 
 			const render = () => {
-				if (shouldChangeMap) {
-					world = scale <= SCALE_POINT ? worldLow : worldHigh;
-					// removeWorldMapConnections(svg);
-					removeFromMap(svg, 'g#poland-land');
-					removeExistingJsonOnGlobe(svg);
-					removeGlobeHighlight(svg);
-					removeGlobeShading(svg);
-
-					appendedPath = layerJsonOnGlobe(svg, path, world);
-
-					drawOnMap(svg, path, countries, 'poland-land');
-					addGlobeHighlight(svg, projection, [width, height]);
-					addGlobeShading(svg, projection, [width, height]);
-					setMarkersOnMap(svg, projection, markers.features);
-					land = topojson.feature(world, world.objects.land);
-
-					// console.log('Maps changes to ', scale <= SCALE_POINT ? 'low' : 'high');
-					shouldChangeMap = false;
-				}
-
 				appendedPath.attr('d', geoPath(land));
-
-				scaleGlobShadow(svg, projection, [width, height]);
-				scaleGlobeBaseColorCircle(svg, projection, [width, height]);
-				scaleGlobeHighlight(svg, projection, [width, height]);
-				scaleGlobeShading(svg, projection, [width, height]);
 
 				applyToDraw(svg, path, 'g#poland-land');
 				rect.raise();
 			};
 
 			render();
+
+			// .on('zoom', (event) => {
+
+			// });
 			svg.call(
 				d3
 					.drag()
-					.on('drag', (event) => {
-						const rotate = projection.rotate();
-
-						const k = SENSITIVITY_LOW_RES / projection.scale();
-						projection.rotate([rotate[0] + event.dx * k, rotate[1] - event.dy * k]);
-
-						svg.selectAll('.land').attr('d', path);
-						applyToDraw(svg, path, 'g#poland-land');
-
+					.on('drag', ({ x, y, dx, dy }) => {
+						const [lastX, lastY] = projection.translate();
+						projection.translate([lastX + dx, lastY + dy]);
 						applyGlobeMovementToMarkers(d3, svg, projection, path);
+						render();
 					})
 					.on('end', function () {
 						fetchMarkers(svg);
 					})
 			).call(
-				d3.zoom().on('zoom', (event) => {
-					const SCALE = initialScale * event.transform.k;
-					projection.scale(SCALE);
-
-					applyGlobeMovementToMarkers(d3, svg, projection, path);
-
-					shouldChangeMap =
-						(scale <= SCALE_POINT && SCALE > SCALE_POINT) ||
-						(scale > SCALE_POINT && SCALE <= SCALE_POINT) ||
-						true;
-					scale = SCALE;
-					render();
-
-					fetchMarkers(svg);
-				})
+				d3
+					.zoom()
+					.scaleExtent([1, Infinity])
+					.translateExtent([
+						[0, 0],
+						[width, height]
+					])
+					.extent([
+						[0, 0],
+						[width, height]
+					])
+					.on('zoom', (event) => {
+						svg.select('path').attr('transform', event.transform);
+						projection(event.transform);
+						// fetchMarkers(svg);
+					})
 			);
 		},
 		[worldLow, worldHigh, markers, selectedMarker]
 	);
-
 	return (
 		<>
 			<div ref={ref}></div>
@@ -186,4 +167,4 @@ const WorldMap3: React.FC<WorldMap3Props> = ({ height, width, selectedYear }) =>
 	);
 };
 
-export default WorldMap3;
+export default WorldMap4;

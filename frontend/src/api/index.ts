@@ -11,7 +11,7 @@ export const fetchApi = async (body) => {
 		return await response.json();
 	} catch (error) {
 		console.log('[ERROR]: ', error);
-		message.error('Nie można połączyć się z serwerem');
+		// message.error('Nie można połączyć się z serwerem');
 		return {
 			features: []
 		};
