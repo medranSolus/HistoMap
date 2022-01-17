@@ -1,13 +1,10 @@
-using System.Text;
 using HistoMapService.Services.Interfaces;
 using HistoMapService.Services.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 
 namespace HistoMapService
 {
@@ -31,14 +28,13 @@ namespace HistoMapService
                     .AllowCredentials();
             }));
             services.AddControllers();
-            
+
             services.AddSwaggerGen();
 
-            services.AddHttpsRedirection(options => 
+            services.AddHttpsRedirection(options =>
             {
                 options.HttpsPort = 5001;
             });
-
 
             AddApplicationServices(services);
             //services.AddDbContext<Model.HMContext>(options =>
