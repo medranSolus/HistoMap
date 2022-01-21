@@ -31,6 +31,11 @@ namespace HistoMapService.Services.Services
                     var bookMap = new Dictionary<Tuple<float, float>, List<BookInfo>>();
                     foreach (var book in newObject)
                     {
+                        if(!request.Filters.Contains(book.type))
+                        {
+                            continue;
+                        }
+
                         if (request.BoundingBox.TopLeft.x <= book.coordinates[0]
                             && request.BoundingBox.TopLeft.y >= book.coordinates[1]
                             && request.BoundingBox.BottomRight.x >= book.coordinates[0]
@@ -81,6 +86,8 @@ namespace HistoMapService.Services.Services
                         }
                         );
                     }
+
+
                     return response;
                 }
                 catch (Exception)

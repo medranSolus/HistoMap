@@ -13,8 +13,8 @@ namespace HistoMapService.DTOs.Requests
     public enum FilterForGetMarkersRequest
     {
         Countries = 0,
-        Mountains = 1,
-        Rivers = 2
+        Cities = 1,
+        Naturals = 2
     }
 
     public class BoundingBoxForGetMarkersRequest
