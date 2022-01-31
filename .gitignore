@@ -98,4 +98,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+**/HistoMapService/.vscode/
 **/HistoMapService/Data/*.json
+**/frontend/data/db_books.json
