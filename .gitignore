@@ -101,3 +101,5 @@ yarn-error.log*
 **/HistoMapService/.vscode/
 **/HistoMapService/Data/*.json
 **/frontend/data/db_books.json
+**/frontend/data/fix.js
+**/frontend/data/parse.js

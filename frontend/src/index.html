@@ -14,58 +14,251 @@
 		<div class="map-container"></div>
 		<div class="date-container">
 			<h2 id="current-year"></h2>
-			<
-		</div>
-		<div id="myModal" class="modal">
-			<div class="modal-content">
-				<span><h4 id="book-title">Book</h4><p id="count" class="muted"></p></span>
-				<p id="description">
-					<ol id="titles">
-					</ol>
-				</p>
-				<hr />
-				<p id="tag" class="muted">Polska, moskwa</p>
+			<div class="controls-container ">
+				<i id="backward" class="fas fa-backward"></i>
+				<i id="play" class="fas fa-play"></i>
+				<i id="pause" class="fas fa-pause"></i>
+				<i id="forward" class="fas fa-forward"></i>
+			</div>
+			<div class="slider-container"><input id="slider" type="range" min="1900" max="2020" value="1900"></div>
+			<div>
+				<div>
+					<input type="radio" id="countries" name="drone" value="0" checked>
+					<label for="huey">Kraje</label>
+				</div>
+				<div>
+					<input type="radio" id="cities" name="drone" value="1">
+					<label for="cities">Miasta</label>
+				</div>
+				<div>
+					<input type="radio" id="naturals" name="drone" value="2">
+					<label for="naturals">Obiekty naturalne</label>
+				</div>
+				<div>
+					<input type="radio" id="region" name="drone" value="3">
+					<label for="region">Kontynent/Region</label>
+				</div>
+			</div>
+			<div id="sample">
+				<div class="d-flex">
+					<a id="sample-cold"></a>
+					<div class="description">do 30 książek<br/>
+					od 30 do 70 książek<br/>
+					ponad 70 książek</div><br/>
+				</div>
 			</div>
 		</div>
+		<div class="messenger">
+		</div>
+		<div id="myModal" class="modal">
+			<div id="modal-content" class="modal-content">
+				<div id="n-pointer-capturer"></div>
+				<div class="d-flex"><h4 id="book-title"></h4>
+					<span id="close-modal">&times;</span>
+				</div>
+				<p id="count" class="muted"></p>
+				<div class="expandable-parent"><p id="description">
+					<ol id="titles">
+					</ol>
+					</div>
+				</p>
+				<hr />
+				<p id="tag" class="muted"></p>
+			</div>
+		</div>
+		<script src="https://kit.fontawesome.com/12722d3b6e.js" crossorigin="anonymous"></script>
 		<script src="https://d3js.org/d3.v6.js"></script>
 		<script src="https://unpkg.com/topojson@3"></script>
 		<!-- Create an element where the map will take place -->
 		<script>
 			const currentYearElement = document.getElementById('current-year');
+			const sliderElement = document.getElementById('slider');
+			const playElement = document.getElementById('play');
+			const pauseElement = document.getElementById('pause');
+			const forwardElement = document.getElementById('forward');
+			const backwardElement = document.getElementById('backward');
 			const bookTitle = document.getElementById('book-title');
+			const messengerElement = document.getElementsByClassName("messenger")[0]
 			const description = document.getElementById('description');
+			const closeModalElement = document.getElementById('close-modal');
+			const countriesInputElement = document.getElementById('countries');
+			const citiesInputElement = document.getElementById('cities');
+			const naturalsInputElement = document.getElementById('naturals');
+			const regionInputElement = document.getElementById('region');
+			const nCaptureElement = document.getElementById('n-pointer-capturer');
+			const modalContentElement = document.getElementById('modal-content');
+			const sampleColdElement = d3.select(document.getElementById('sample-cold'));
+			const sampleMediumElement = d3.select(document.getElementById('sample-medium'))
+			const sampleHotElement = d3.select(document.getElementById('sample-hot'));
 			const tag = document.getElementById('tag');
 			const count = document.getElementById('count');
 			var modal = document.getElementById('myModal');
 			var btn = document.getElementById('myBtn');
 
 			const CIRCLE_SIZE = 25;
-			const INITIAL_TIMEOUT = 100;
-			let currentYearIndex = 0;
-			let g = null;
-			let data;
+			let initial_timeout = 100;
+			let currentYearIndex = 80;
 			let transform = null;
+			let shouldSliderStop = true;
+			let data;
+			let selectedDataType = 0;
+			let g = null;
 
-			const renderModalWithBookInfo = function (book) {};
-			// const create
+			const showMessage = function(message){
+				messengerElement.style.display = "block"
+				setTimeout(() => {
+					messengerElement.textContent = message;
+					messengerElement.style.opacity = 1
+					setTimeout(() => {
+						messengerElement.style.opacity = 0
+						setTimeout(() => {
+							messengerElement.style.display = "none"
+						}, 100);
+					}, 1000);				
+				}, 50);
+			}
 
-			const getNextYear = function (element, years) {
-				let currentTimeout = INITIAL_TIMEOUT;
+			const radioInputChanged = function(event){
+				selectedDataType = event.target.value;
+			}
+			countriesInputElement.addEventListener("change", radioInputChanged)
+			citiesInputElement.addEventListener("change", radioInputChanged)
+			naturalsInputElement.addEventListener("change", radioInputChanged)
+			regionInputElement.addEventListener("change", radioInputChanged)
+			
+			sliderElement.addEventListener("input", function(e){
+				shouldSliderStop =true;
+				sliderElement.value = e.target.value
+				currentYearElement.textContent = e.target.value
+			})
+
+			playElement.addEventListener("click", function(){
+				if(shouldSliderStop){
+					shouldSliderStop = false;
+					pauseElement.style.color = "black"
+					playElement.style.color = "steelblue"
+					getYearData(currentYearElement, Object.keys(data))
+				}
+			})
+
+			pauseElement.addEventListener("click", function(){
+				if(!shouldSliderStop){
+					shouldSliderStop = true;
+					playElement.style.color = "black"
+					pauseElement.style.color = "#fc5959"
+				}
+			})
+
+			forwardElement.addEventListener("click", function(e){
+				if(initial_timeout > 25){
+					initial_timeout = initial_timeout / 2
+					showMessage(`Czas odtwarzania x${(1000/initial_timeout).toFixed(1)}`)
+				}
+			})
+
+			backwardElement.addEventListener("click", function(e){
+				if(initial_timeout < 6400){
+					initial_timeout = initial_timeout * 2
+					showMessage(`Czas odtwarzania x${(1000/initial_timeout).toFixed(1)}`)
+				}
+			})
+
+			sliderElement.addEventListener("change", function(e){
+				shouldSliderStop =true;
+				sliderElement.value = e.target.value
+				currentYearElement.textContent = e.target.value
+				const years = Object.keys(data)
+				currentYearIndex = years.findIndex(v => v === e.target.value)
+
+				getYearData(currentYearElement, years);
+			})
+
+			const openModal = function(){
+				modal.style.display = "block"
+				setTimeout(() => {
+					modal.style.opacity = 1
+				}, 100);
+			}
+
+			closeModalElement.addEventListener("click", function(e){
+				modal.style.opacity = 0
+				setTimeout(() => {
+					modal.style.display = "none"
+				}, 100);
+			})
+
+			let isResizing = false;
+			document.addEventListener("keydown", function(e){
+				if(e.code === "Space"){
+					if(shouldSliderStop){
+						pauseElement.style.color = "black"
+						playElement.style.color = "steelblue"
+						shouldSliderStop = false;
+						getYearData(currentYearElement, Object.keys(data))
+					}
+					else{
+
+						playElement.style.color = "black"
+						pauseElement.style.color = "#fc5959"
+						shouldSliderStop = true;
+					}
+				}
+			})
+
+			nCaptureElement.addEventListener("mousedown", (e)=> {
+				isResizing = true;
+				let prevX = e.clientX
+				let prevY = e.clientY
+				
+				window.addEventListener("mousemove", mousemove);
+				window.addEventListener("mouseup", mouseup);
+
+				function mousemove (event){
+					if(isResizing){
+						const rect = modalContentElement.getBoundingClientRect();
+						const newHeight  = rect.bottom - event.pageY
+						if(newHeight >=230 && newHeight <= 710){
+							modalContentElement.style.height = newHeight + "px"
+						}
+					}
+				}
+
+				function mouseup(event){
+					isResizing = false;
+				}
+
+			})
+
+
+			const applyStyleBaseOnQuantity = function(value, cbIfSmall, cbIfMedium, cbIfBig) {
+				const SMALL_RANGE_END = 30 ;
+				const MEDIUM_RANGE_END = 70;
+				
+				if(value <=SMALL_RANGE_END){
+					return cbIfSmall(value,0+1,SMALL_RANGE_END)
+				}else if(value > SMALL_RANGE_END && value <=MEDIUM_RANGE_END){
+					return cbIfMedium(value,SMALL_RANGE_END+1, MEDIUM_RANGE_END)
+				}
+				return cbIfBig(value,MEDIUM_RANGE_END+1,192)
+			}
+
+			const getYearData = function (element, years) {
+				let currentTimeout = initial_timeout;
 
 				if (currentYearIndex === years.length) {
 					currentYearIndex = 0;
 				}
 				if (currentYearIndex === years.length - 1 || currentYearIndex === 0) {
-					timeout = +3000;
+					currentTimeout += 2000;
 				}
 				element.textContent = years[currentYearIndex];
 				if (g != null) {
 					let prevFill;
+					let prevRadius;
 					let circleSize = transform ? CIRCLE_SIZE / transform.k : CIRCLE_SIZE;
 					g.selectAll('a').remove();
 					g.selectAll('circle')
-
-						.data(data[years[currentYearIndex]])
+						.data(data[years[currentYearIndex]].filter(v => v.type == selectedDataType))
 						.enter()
 						.append('a')
 						.append('circle')
@@ -77,22 +270,16 @@
 							return projection(coordinates)[1];
 						})
 						.on('click', function (e, d) {
-							const yearData = data[years[currentYearIndex]];
-							const otherBooks = yearData.filter((v) => v.name === d.name);
-							console.log(
-								otherBooks.length,
-								otherBooks.map((x) => x.title)
-							);
-							count.textContent = `${otherBooks.length} książek o danym rejonie`
+							count.textContent = d.name;
 							bookTitle.textContent = years[currentYearIndex];
 							
 							const titles = document.getElementById("titles")
 							const li = document.createElement("li")
 							li.classList.add("text-hidden");
-							const listLi = otherBooks.map(b => {
+							const listLi = d.titles.map(title => {
 								const li = document.createElement("li")
 								li.classList.add("text-hidden");
-								li.textContent = b.title
+								li.textContent = title
 								return li;
 							})
 							titles.innerHTML = ''
@@ -100,68 +287,54 @@
 								titles.appendChild(li)
 							});
 							description.appendChild;
-							tag.textContent = d.name;
+							tag.textContent = `${d.quantity} książek o danym rejonie`
+							openModal()
 						})
-						.on('mouseover', function (e) {
-							prevFill = d3.select(this).attr('r');
-							d3.select(this).attr('r', prevFill * 2.5);
+						.on('mouseover', function (e,d) {
+							e.stopPropagation();
+							prevRadius = d3.select(this).attr('r');
+							prevFill = d3.select(this).attr('fill');
+
+							let nextFill = applyStyleBaseOnQuantity(d.quantity,() => "#ffe43660",()=> "#ff903660",()=>"#ff0a0a60")
+
+							const k = transform ? transform.k : 1;
+
+							d3.select(this).attr('fill', nextFill);
+							d3.select(this).attr('r', applyStyleBaseOnQuantity(d.quantity, () => prevRadius * (k+1)/4, ()=> prevRadius * (k+1)/2, ()=>prevRadius * (k+1)/2));
 						})
 						.on('mouseout', function (e) {
-							d3.select(this).attr('r', prevFill);
+							d3.select(this).attr('r', prevRadius);
+							d3.select(this).attr('fill', prevFill);
 						})
 						.attr('transform', transform)
 						.attr('r', function (d) {
-							const yearData = data[years[currentYearIndex]];
-							const quantity = yearData.filter((v) => v.name === d.name).length;
-
-							switch (true) {
-								case quantity < 30:
-									return circleSize;
-
-									break;
-								case quantity >= 30 && quantity < 70:
-									return circleSize*1.25;
-
-									break;
-								case quantity >= 70:
-									return circleSize*2.5
-
-									break;
-								default:
-									return circleSize
-									break;
-							}
-							return circleSize;
+							const k = transform ? transform.k : 1;
+							return applyStyleBaseOnQuantity(
+								d.quantity,
+								() => CIRCLE_SIZE * 1/ k,
+								() => CIRCLE_SIZE * 1/ k,
+								() => CIRCLE_SIZE * 1.1/ k
+							);
 						})
 						.attr('fill', function (d) {
-							const yearData = data[years[currentYearIndex]];
-							const quantity = yearData.filter((v) => v.name === d.name).length;
-
-							switch (true) {
-								case quantity < 30:
-									return `url(#grad-cold)`;
-
-									break;
-								case quantity >= 30 && quantity < 70:
-									return `url(#grad-medium)`;
-
-									break;
-								case quantity >= 70:
-									return `url(#grad-hot)`;
-
-									break;
-								default:
-									return `url(#grad-cold)`;
-									break;
-							}
-							return 'transparent';
+							const genId = (val,base,end) => Math.ceil((val - base)/(end- base)*4)+1
+							return applyStyleBaseOnQuantity(
+								d.quantity,
+								// (val, base) => `url(#grad-cold)`,
+								(val, base, end) => `url(#grad-cold-${genId(val,base,end)})`,
+								(val, base, end) => `url(#grad-medium-${genId(val,base,end)})`,
+								(val, base, end) => `url(#grad-hot-${genId(val,base,end)})`
+							);
 						});
 				}
-				setTimeout(() => {
+				
+				sliderElement.value = years[currentYearIndex]
+				if(!shouldSliderStop){
+					setTimeout(() => {
 					currentYearIndex += 1;
-					getNextYear(element, years);
-					currentTimeout = INITIAL_TIMEOUT;
-				}, currentTimeout);
+					getYearData(element, years);
+					currentTimeout = initial_timeout;
+				}, currentTimeout);}
 			};
 			var width = 960,
 				height = 500;
@@ -180,6 +353,7 @@
 			g = svg.append('g');
 			var defs = svg.append('defs');
 
+
 			const renderGradient = (data, id) =>
 				defs
 					.append('radialGradient')
@@ -195,32 +369,157 @@
 						return d.color;
 					});
 
+			const baseHotColor= "#f2432c"
 			renderGradient(
 				[
-					{ offset: '1%', color: '#fdef32a0' },
-					{ offset: '5%', color: '#fd803201' },
-					{ offset: '75%', color: '#fd803200' },
-					{ offset: '100%', color: '#fd803200' }
+					{ offset: '10%', color: baseHotColor+'f0' },
+					{ offset: '20%', color: baseHotColor+'a0' },
+					{ offset: '35%', color: baseHotColor+'60' },
+					{ offset: '100%', color: baseHotColor+'00' }
 				],
-				'grad-hot'
+				'grad-hot-1'
+			);
+						renderGradient(
+				[
+					{ offset: '15%', color: baseHotColor+'f0' },
+					{ offset: '25%', color: baseHotColor+'a0' },
+					{ offset: '45%', color: baseHotColor+'60' },
+					{ offset: '100%', color: baseHotColor+'00' }
+				],
+				'grad-hot-2'
+			);
+						renderGradient(
+				[
+					{ offset: '20%', color: baseHotColor+'f0' },
+					{ offset: '30%', color: baseHotColor+'a0' },
+					{ offset: '45%', color: baseHotColor+'60' },
+					{ offset: '100', color: baseHotColor+'00' }
+				],
+				'grad-hot-3'
+			);
+						renderGradient(
+				[
+					{ offset: '15%', color: baseHotColor+'ff' }, 
+					{ offset: '35%', color: baseHotColor+'f0' },
+					{ offset: '75%', color: baseHotColor+'60' },
+					{ offset: '100%', color: baseHotColor+'10' }
+				],
+				'grad-hot-4'
+			);
+
+			renderGradient(
+				[
+					{ offset: '2%', color: '#ff9036ff' },
+					{ offset: '10%', color: '#ff903680' },
+					{ offset: '20%', color: '#ff903610' },
+					{ offset: '100%', color: '#ff903600' }
+				],
+				'grad-medium-1'
+			);
+						renderGradient(
+				[
+					{ offset: '2%', color: '#ff9036ff' },
+					{ offset: '10%', color: '#ff903680' },
+					{ offset: '20%', color: '#ff903610' },
+					{ offset: '100%', color: '#ff903600' }
+				],
+				'grad-medium-2'
+			);
+						renderGradient(
+				[
+					{ offset: '2%', color: '#ff9036ff' },
+					{ offset: '10%', color: '#ff9036c0' },
+					{ offset: '20%', color: '#ff903610' },
+					{ offset: '100%', color: '#ff903600' }
+				],
+				'grad-medium-3'
+			);
+						renderGradient( 
+				[
+					{ offset: '2%', color: '#ff9036ff' },
+					{ offset: '10%', color: '#ff9036c0' },
+					{ offset: '20%', color: '#ff903610' },
+					{ offset: '100%', color: '#ff903600' }
+				],
+				'grad-medium-4'
+			);
+
+
+			renderGradient(
+				[
+					{ offset: '5%', color: '#ffe43660' },
+					{ offset: '10%', color: '#ffe43601' },
+					{ offset: '100%', color: '#ffe43600' }
+				],
+				'grad-cold-1'
 			);
 			renderGradient(
 				[
-					{ offset: '2%', color: '#db403515' },
-					{ offset: '10%', color: '#db403501' },
-					// { offset: '%', color: '#db403540' },
-					{ offset: '100%', color: '#db403500' }
+					{ offset: '5%', color: '#ffe43660' },
+					{ offset: '10%', color: '#ffe43601' },
+					{ offset: '100%', color: '#ffe43600' }
 				],
-				'grad-medium'
+				'grad-cold-2'
 			);
 			renderGradient(
 				[
-					{ offset: '1%', color: '#c89cffa0' },
-					{ offset: '5%', color: '#b273ff01' },
-					{ offset: '20%', color: '#8e47e600' }
-				],
-				'grad-cold'
+					{ offset: '5%', color: '#ffe43680' },
+					{ offset: '15%', color: '#ffe43601' },
+					{ offset: '100%', color: '#ffe43600' }
+				], 
+				'grad-cold-3'
 			);
+			renderGradient(
+				[
+					{ offset: '5%', color: '#ffe43680' },
+					{ offset: '15%', color: '#ffe43601' },
+					{ offset: '100%', color: '#ffe43600' }
+				],
+				'grad-cold-4'
+			);
+
+			const svgSample = sampleColdElement.append("svg").attr("height",100).attr("width",50).attr("class", "sample-svg")
+			const defsSample = svgSample.append("defs");
+
+			const renderSampleGradient = (data, id) => {
+				defsSample.append('radialGradient')
+					.attr('id', id)
+					.selectAll('stop')
+					.data(data)
+					.enter()
+					.append('stop')
+					.attr('offset', function (d) {
+						return d.offset;
+					})
+					.attr('stop-color', function (d) {
+						return d.color;
+					});
+			}
+			
+			renderSampleGradient([
+					{ offset: '5%', color: '#ffe436f0' },
+					{ offset: '10%', color: '#ffe43601' },
+					{ offset: '100%', color: '#ffe43600' }
+				],"sample-grad-cold")
+
+			renderSampleGradient(				[
+					{ offset: '2%', color: '#ff9036ff' },
+					{ offset: '10%', color: '#ff9036f0' },
+					{ offset: '20%', color: '#ff903610' },
+					{ offset: '100%', color: '#ff903600' }
+				],"sample-grad-medium")
+
+			renderSampleGradient([
+					{ offset: '15%', color: baseHotColor+'ff' }, 
+					{ offset: '35%', color: baseHotColor+'f0' },
+					{ offset: '75%', color: baseHotColor+'a0' },
+					{ offset: '100%', color: baseHotColor+'10' }
+				],"sample-grad-hot")
+
+			svgSample.append("circle").attr("r", CIRCLE_SIZE * 3 ).attr("fill", "url(#sample-grad-cold)").attr("cx",25).attr("cy",17)
+			svgSample.append("circle").attr("r", CIRCLE_SIZE * 2.5 ).attr("fill", "url(#sample-grad-medium)").attr("cx",25).attr("cy",45)
+			svgSample.append("circle").attr("r", CIRCLE_SIZE * 0.75 ).attr("fill", "url(#sample-grad-hot)").attr("cx",25).attr("cy",80)
+
 			// load and display the World
 			d3.json('http://localhost:80/world-110m.json').then(function (topology) {
 				g.selectAll('path')
@@ -238,47 +537,28 @@
 					g.selectAll('path').attr('transform', event.transform);
 					g.selectAll('circle')
 						.attr('transform', event.transform)
-						.attr('r', (CIRCLE_SIZE * 1) / event.transform.k);
+						.attr('r', function (d) {
+							return applyStyleBaseOnQuantity(
+								d.quantity,
+								() => CIRCLE_SIZE * 1 / event.transform.k,
+								() => CIRCLE_SIZE * 1.25 / event.transform.k,
+								() => CIRCLE_SIZE * 1.5 / event.transform.k
+							);
+						});
 					transform = event.transform;
 				});
 
-			// svg.call(
-			// 	d3.drag().on('drag', function (event) {
-			// 		var c = projection.rotate();
-			// 		projection.rotate([c[0] + event.dx / 6, c[1] - event.dy / 6]);
-			// 		svg.selectAll('path').attr('d', path);
-			// 		svg.selectAll('.circles')
-			// 			.attr('cx', function (d) {
-			// 				var coords = projection([d.Longitude_imp, d.Latitude_imp]);
-			// 				return coords[0];
-			// 			})
-			// 			.attr('cy', function (d) {
-			// 				var coords = projection([d.Longitude_imp, d.Latitude_imp]);
-			// 				return coords[1];
-			// 			});
-
-			// 		svg.selectAll('circle').style('display', function (d) {
-			// 			var circle = [d.Longitude_imp, d.Latitude_imp];
-			// 			var rotate = projection.rotate(); // antipode of actual rotational center.
-
-			// 			var center = [-rotate[0], -rotate[1]];
-
-			// 			var distance = d3.geoDistance(circle, center);
-			// 			return distance > Math.PI / 2 ? 'none' : 'inline';
-			// 		});
-			// 	})
-			// );
 
 			svg.call(zoom);
 
-			d3.json('http://localhost:80/db_books.json').then(function (dataJSON) {
+			d3.json('http://localhost:80/new_data.json').then(function (dataJSON) {
 				data = dataJSON;
 				const years = Object.keys(dataJSON);
 				points = years;
 
 				window.data = dataJSON;
-
-				getNextYear(currentYearElement, years);
+ 
+				getYearData(currentYearElement, years);
 			});
 		</script>
 	</body>
